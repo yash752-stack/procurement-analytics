@@ -283,4 +283,4 @@ with st.expander("📄 Explore Enriched Procurement Data"):
     cols_show = ["PO_ID","Supplier_Name","Category","Department","Order_Date","Total_Value_INR","Status","Is_Delayed","Delay_Days","Spend_Band","Supplier_Risk_Flag"]
     st.dataframe(fdf[cols_show].sort_values("Order_Date",ascending=False),use_container_width=True,hide_index=True)
 
-st.markdown("<div style='text-align:center;padding:24px 0 8px;color:rgba(245,198,208,0.25);font-size:0.72rem;letter-spacing:1px'>PROCUREMENT INTELLIGENCE SUITE · YASH CHAUDHARY · GITHUB.COM/YASH752-STACK</div>", unsafe_allow_html=True),208,0.25);font-size:0.72rem;letter-spacing:1px'>PROCUREMENT INTELLIGENCE SUITE · YASH CHAUDHARY · GITHUB.COM/YASH752-STACK</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;padding:24px 0 8px;color:rgba(245,198,208,0.25);font-size:0.72rem;letter-spacing:1px'>PROCUREMENT INTELLIGENCE SUITE · YASH CHAUDHARY · GITHUB.COM/YASH752-STACK</div>", unsafe_allow_html=True)
