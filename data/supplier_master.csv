@@ -1,0 +1,11 @@
+Supplier_ID,Supplier_Name,Category,Country,Quality_Score,On_Time_Rate_Pct,Avg_Lead_Days,Contract_Expiry,Preferred
+SUP001,Tata Steel Supplies,Raw Materials,India,4.2,72.6,13,2026-09-15,True
+SUP002,Infosys BPO Services,IT Services,India,4.5,86.3,24,2025-10-12,True
+SUP003,Mahindra Logistics,Logistics,India,3.8,70.6,44,2026-04-02,True
+SUP004,Reliance Office Supplies,Office,India,4.0,97.3,35,2025-07-19,False
+SUP005,L&T Construction,Construction,India,4.3,78.9,42,2025-02-27,False
+SUP006,HCL Tech Solutions,IT Services,India,4.6,81.1,37,2026-01-14,False
+SUP007,HDFC Equipment Finance,Equipment,India,3.9,80.4,28,2025-12-20,False
+SUP008,Wipro Facilities,Facilities,India,4.1,78.6,38,2026-07-29,True
+SUP009,Asian Paints Industrial,Raw Materials,India,3.7,76.0,38,2026-03-02,False
+SUP010,DHL Express India,Logistics,India,4.4,78.1,37,2026-03-01,True
