@@ -209,7 +209,7 @@ c3,c4 = st.columns([2,3])
 with c3:
     sup = fdf.groupby("Supplier_Name").agg(Spend=("Total_Value_INR","sum"),Delay_Rate=("Is_Delayed","mean")).reset_index().sort_values("Spend",ascending=True)
     sup["Delay_Pct"] = (sup["Delay_Rate"]*100).round(1)
-    fig = go.Figure(go.Bar(x=sup["Spend"],y=sup["Supplier_Name"],orientation="h",marker=dict(color=sup["Delay_Pct"],colorscale=RED_CONT,colorbar=dict(title="Delay %",tickfont=dict(color=TEXT),titlefont=dict(color=TEXT)),line=dict(color="rgba(0,0,0,0.3)",width=0.5)),hovertemplate="<b>%{y}</b><br>₹%{x:,.0f}<br>Delay: %{marker.color:.1f}%<extra></extra>"))
+    fig = go.Figure(go.Bar(x=sup["Spend"],y=sup["Supplier_Name"],orientation="h",marker=dict(color=sup["Delay_Pct"],colorscale=RED_CONT,colorbar=dict(title=dict(text="Delay %",font=dict(color=TEXT)),tickfont=dict(color=TEXT)),line=dict(color="rgba(0,0,0,0.3)",width=0.5)),hovertemplate="<b>%{y}</b><br>₹%{x:,.0f}<br>Delay: %{marker.color:.1f}%<extra></extra>"))
     fig.update_layout(**PLOTLY_LAYOUT,title="Supplier Spend by Delay Rate")
     fig.update_yaxes(tickfont_size=9)
     fig.update_xaxes(tickformat=",.0f")
@@ -217,7 +217,7 @@ with c3:
 with c4:
     pivot = fdf.groupby(["Order_Month","Category"])["Total_Value_INR"].sum().reset_index()
     pw = pivot.pivot(index="Category",columns="Order_Month",values="Total_Value_INR").fillna(0)
-    fig = go.Figure(go.Heatmap(z=pw.values,x=pw.columns.tolist(),y=pw.index.tolist(),colorscale=RED_CONT,hovertemplate="<b>%{y}</b> — %{x}<br>₹%{z:,.0f}<extra></extra>",colorbar=dict(tickfont=dict(color=TEXT),titlefont=dict(color=TEXT))))
+    fig = go.Figure(go.Heatmap(z=pw.values,x=pw.columns.tolist(),y=pw.index.tolist(),colorscale=RED_CONT,hovertemplate="<b>%{y}</b> — %{x}<br>₹%{z:,.0f}<extra></extra>",colorbar=dict(tickfont=dict(color=TEXT))))
     fig.update_layout(**PLOTLY_LAYOUT,title="Spend Heatmap — Category × Month",height=320)
     fig.update_xaxes(tickangle=-45,tickfont_size=9)
     st.plotly_chart(fig,use_container_width=True)
@@ -263,7 +263,7 @@ with c8:
 with c9:
     rd = fdf.groupby("Supplier_Name").agg(Spend=("Total_Value_INR","sum"),Delay_Rate=("Is_Delayed","mean"),Orders=("PO_ID","count")).reset_index()
     rd["Delay_Pct"] = rd["Delay_Rate"]*100
-    fig = go.Figure(go.Scatter(x=rd["Delay_Pct"],y=rd["Spend"]/1e6,mode="markers+text",text=rd["Supplier_Name"].str.split().str[0],textposition="top center",textfont=dict(size=9,color=TEXT),marker=dict(size=rd["Orders"]/3,color=rd["Delay_Pct"],colorscale=RED_CONT,showscale=True,colorbar=dict(title="Delay %",tickfont=dict(color=TEXT),titlefont=dict(color=TEXT)),line=dict(color=ACCENT2,width=1)),hovertemplate="<b>%{text}</b><br>Delay: %{x:.1f}%<br>₹%{y:.1f}M<extra></extra>"))
+    fig = go.Figure(go.Scatter(x=rd["Delay_Pct"],y=rd["Spend"]/1e6,mode="markers+text",text=rd["Supplier_Name"].str.split().str[0],textposition="top center",textfont=dict(size=9,color=TEXT),marker=dict(size=rd["Orders"]/3,color=rd["Delay_Pct"],colorscale=RED_CONT,showscale=True,colorbar=dict(title=dict(text="Delay %",font=dict(color=TEXT)),tickfont=dict(color=TEXT)),line=dict(color=ACCENT2,width=1)),hovertemplate="<b>%{text}</b><br>Delay: %{x:.1f}%<br>₹%{y:.1f}M<extra></extra>"))
     fig.update_layout(**PLOTLY_LAYOUT,title="Supplier Risk Matrix",xaxis_title="Delay Rate %",yaxis_title="Spend (₹M)",height=320)
     st.plotly_chart(fig,use_container_width=True)
 
@@ -283,4 +283,4 @@ with st.expander("📄 Explore Enriched Procurement Data"):
     cols_show = ["PO_ID","Supplier_Name","Category","Department","Order_Date","Total_Value_INR","Status","Is_Delayed","Delay_Days","Spend_Band","Supplier_Risk_Flag"]
     st.dataframe(fdf[cols_show].sort_values("Order_Date",ascending=False),use_container_width=True,hide_index=True)
 
-st.markdown("<div style='text-align:center;padding:24px 0 8px;color:rgba(245,198,208,0.25);font-size:0.72rem;letter-spacing:1px'>PROCUREMENT INTELLIGENCE SUITE · YASH CHAUDHARY · GITHUB.COM/YASH752-STACK</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;padding:24px 0 8px;color:rgba(245,198,208,0.25);font-size:0.72rem;letter-spacing:1px'>PROCUREMENT INTELLIGENCE SUITE · YASH CHAUDHARY · GITHUB.COM/YASH752-STACK</div>", unsafe_allow_html=True),208,0.25);font-size:0.72rem;letter-spacing:1px'>PROCUREMENT INTELLIGENCE SUITE · YASH CHAUDHARY · GITHUB.COM/YASH752-STACK</div>", unsafe_allow_html=True)
