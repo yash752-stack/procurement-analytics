@@ -126,27 +126,87 @@ hr { border-color: rgba(180,30,60,0.2) !important; }
 PLOTLY_LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(family="Inter", color="#f5c6d0", size=12),
-    title_font=dict(family="Playfair Display", color="#f5c6d0", size=15),
-    xaxis=dict(gridcolor="rgba(180,30,60,0.12)", linecolor="rgba(180,30,60,0.2)", tickcolor="rgba(245,198,208,0.3)"),
-    yaxis=dict(gridcolor="rgba(180,30,60,0.12)", linecolor="rgba(180,30,60,0.2)", tickcolor="rgba(245,198,208,0.3)"),
-    legend=dict(bgcolor="rgba(26,0,16,0.8)", bordercolor="rgba(180,30,60,0.3)", borderwidth=1),
-    margin=dict(t=50, b=30, l=10, r=10),
-    height=320,
+    font=dict(family="Inter", color="#ddb8c2", size=12),
+    title_font=dict(family="Playfair Display", color="#e8c8d0", size=14),
+    xaxis=dict(gridcolor="rgba(140,50,70,0.1)", linecolor="rgba(140,50,70,0.15)", tickcolor="rgba(200,160,175,0.3)"),
+    yaxis=dict(gridcolor="rgba(140,50,70,0.1)", linecolor="rgba(140,50,70,0.15)", tickcolor="rgba(200,160,175,0.3)"),
+    legend=dict(bgcolor="rgba(18,4,10,0.75)", bordercolor="rgba(140,50,70,0.25)", borderwidth=1),
+    margin=dict(t=44, b=28, l=10, r=10),
 )
-ACCENT    = "#e8103a"
-ACCENT2   = "#ff6b8a"
-ACCENT3   = "#c0392b"
-TEXT      = "#f5c6d0"
-RED_SCALE = ["#4d0015","#7a0025","#a60030","#c0392b","#e8103a","#ff4d6d","#ff8fa3","#ffb3c1"]
-RED_CONT  = [[0,"#1a0010"],[0.25,"#7a0025"],[0.5,"#c0392b"],[0.75,"#e8103a"],[1,"#ff8fa3"]]
+ACCENT    = "#b84060"
+ACCENT2   = "#d98a9a"
+ACCENT3   = "#7a2538"
+TEXT      = "#ddb8c2"
+RED_SCALE = ["#2a0a14","#4a1a28","#6e2c3e","#924455","#b06070","#cc8f9a","#ddb8c2","#eedade"]
+RED_CONT  = [[0,"#160610"],[0.3,"#5c1f30"],[0.6,"#944050"],[0.85,"#bf7080"],[1,"#e0b0ba"]]
+
+def generate_data():
+    import random
+    from datetime import datetime, timedelta
+    random.seed(42)
+    np.random.seed(42)
+    SUPPLIERS = [
+        ("SUP001","Tata Steel Supplies","Raw Materials","India",4.2),
+        ("SUP002","Infosys Bpo Services","IT Services","India",4.5),
+        ("SUP003","Mahindra Logistics","Logistics","India",3.8),
+        ("SUP004","Reliance Office Supplies","Office","India",4.0),
+        ("SUP005","L&T Construction","Construction","India",4.3),
+        ("SUP006","Hcl Tech Solutions","IT Services","India",4.6),
+        ("SUP007","Hdfc Equipment Finance","Equipment","India",3.9),
+        ("SUP008","Wipro Facilities","Facilities","India",4.1),
+        ("SUP009","Asian Paints Industrial","Raw Materials","India",3.7),
+        ("SUP010","Dhl Express India","Logistics","India",4.4),
+    ]
+    DEPTS = ["Finance","Operations","HR","IT","Procurement","Legal","Marketing"]
+    STATUSES = ["Approved","Approved","Approved","Pending","Rejected"]
+    TERMS = ["Net 30","Net 45","Net 60","Immediate"]
+    start, end = datetime(2023,1,1), datetime(2025,3,1)
+    rows = []
+    for i in range(500):
+        sup = random.choice(SUPPLIERS)
+        od = start + timedelta(days=random.randint(0,(end-start).days))
+        dd = od + timedelta(days=random.randint(7,90))
+        ad = dd + timedelta(days=random.randint(-5,20))
+        qty = random.randint(1,200)
+        price = round(random.uniform(500,150000),2)
+        if random.random()<0.03: price = None
+        if random.random()<0.02: qty = -qty
+        rows.append({"PO_ID":f"PO-{2023+i//200}-{str(i+1).zfill(4)}","Supplier_ID":sup[0],"Supplier_Name":sup[1],"Category":sup[2],"Department":random.choice(DEPTS),"Order_Date":od.strftime("%Y-%m-%d"),"Delivery_Due_Date":dd.strftime("%Y-%m-%d"),"Actual_Delivery":ad.strftime("%Y-%m-%d"),"Quantity":qty,"Unit_Price_INR":price,"Total_Value_INR":round(qty*price,2) if price else None,"Payment_Terms":random.choice(TERMS),"Status":random.choice(STATUSES),"Invoice_Received":random.choice([True,False]),"Country":sup[3]})
+    po = pd.DataFrame(rows)
+    sup_rows = []
+    for sup in SUPPLIERS:
+        sup_rows.append({"Supplier_ID":sup[0],"Supplier_Name":sup[1],"Category":sup[2],"Country":sup[3],"Quality_Score":sup[4],"On_Time_Rate_Pct":round(random.uniform(70,98),1),"Avg_Lead_Days":random.randint(10,45),"Preferred":random.choice([True,False])})
+    sm = pd.DataFrame(sup_rows)
+    # cleanse
+    po["Supplier_Name"] = po["Supplier_Name"].str.strip().str.title()
+    po["Quantity_Anomaly"] = po["Quantity"] < 0
+    po["Quantity"] = po["Quantity"].abs()
+    cat_med = po.groupby("Category")["Unit_Price_INR"].transform("median")
+    po["Unit_Price_INR"] = po["Unit_Price_INR"].fillna(cat_med)
+    po["Total_Value_INR"] = po["Quantity"] * po["Unit_Price_INR"]
+    po = po.drop_duplicates(subset="PO_ID", keep="first")
+    # enrich
+    df = po.merge(sm[["Supplier_ID","Quality_Score","On_Time_Rate_Pct","Avg_Lead_Days","Preferred"]], on="Supplier_ID", how="left")
+    df["Order_Date"] = pd.to_datetime(df["Order_Date"])
+    df["Actual_Delivery"] = pd.to_datetime(df["Actual_Delivery"])
+    df["Delivery_Due_Date"] = pd.to_datetime(df["Delivery_Due_Date"])
+    df["Actual_Lead_Days"] = (df["Actual_Delivery"] - df["Order_Date"]).dt.days
+    df["Delay_Days"] = (df["Actual_Delivery"] - df["Delivery_Due_Date"]).dt.days
+    df["Is_Delayed"] = df["Delay_Days"] > 0
+    df["Order_Month"] = df["Order_Date"].dt.to_period("M").astype(str)
+    df["Order_Quarter"] = df["Order_Date"].dt.to_period("Q").astype(str)
+    df["Order_Year"] = df["Order_Date"].dt.year
+    df["Spend_Band"] = pd.cut(df["Total_Value_INR"],bins=[0,10000,50000,200000,float("inf")],labels=["Low (<10K)","Mid (10K-50K)","High (50K-200K)","Strategic (>200K)"])
+    df["Supplier_Risk_Flag"] = ((df["Quality_Score"]<4.0)|(df["On_Time_Rate_Pct"]<80)).map({True:"At Risk",False:"Stable"})
+    os.makedirs("data", exist_ok=True)
+    df.to_csv("data/enriched_procurement_data.csv", index=False)
+    return df
 
 @st.cache_data
 def load_data():
     path = "data/enriched_procurement_data.csv"
     if not os.path.exists(path):
-        st.error("Run pipeline first.")
-        st.stop()
+        generate_data()
     return pd.read_csv(path, parse_dates=["Order_Date","Actual_Delivery","Delivery_Due_Date"])
 
 df = load_data()
@@ -218,7 +278,7 @@ with c4:
     pivot = fdf.groupby(["Order_Month","Category"])["Total_Value_INR"].sum().reset_index()
     pw = pivot.pivot(index="Category",columns="Order_Month",values="Total_Value_INR").fillna(0)
     fig = go.Figure(go.Heatmap(z=pw.values,x=pw.columns.tolist(),y=pw.index.tolist(),colorscale=RED_CONT,hovertemplate="<b>%{y}</b> — %{x}<br>₹%{z:,.0f}<extra></extra>",colorbar=dict(tickfont=dict(color=TEXT))))
-    fig.update_layout(**PLOTLY_LAYOUT,title="Spend Heatmap — Category × Month",height=320)
+    fig.update_layout(**PLOTLY_LAYOUT,title="Spend Heatmap — Category × Month")
     fig.update_xaxes(tickangle=-45,tickfont_size=9)
     st.plotly_chart(fig,use_container_width=True)
 
@@ -257,14 +317,14 @@ with c8:
     for cat in fdf["Category"].unique():
         subset = fdf[fdf["Category"]==cat]["Actual_Lead_Days"].dropna()
         fig.add_trace(go.Violin(y=subset,name=cat,box_visible=True,meanline_visible=True,opacity=0.8,line_color=ACCENT2,fillcolor="rgba(192,57,43,0.2)"))
-    fig.update_layout(**PLOTLY_LAYOUT,title="Lead Time Distribution by Category",height=320)
+    fig.update_layout(**PLOTLY_LAYOUT,title="Lead Time Distribution by Category")
     fig.update_xaxes(tickfont_size=9)
     st.plotly_chart(fig,use_container_width=True)
 with c9:
     rd = fdf.groupby("Supplier_Name").agg(Spend=("Total_Value_INR","sum"),Delay_Rate=("Is_Delayed","mean"),Orders=("PO_ID","count")).reset_index()
     rd["Delay_Pct"] = rd["Delay_Rate"]*100
     fig = go.Figure(go.Scatter(x=rd["Delay_Pct"],y=rd["Spend"]/1e6,mode="markers+text",text=rd["Supplier_Name"].str.split().str[0],textposition="top center",textfont=dict(size=9,color=TEXT),marker=dict(size=rd["Orders"]/3,color=rd["Delay_Pct"],colorscale=RED_CONT,showscale=True,colorbar=dict(title=dict(text="Delay %",font=dict(color=TEXT)),tickfont=dict(color=TEXT)),line=dict(color=ACCENT2,width=1)),hovertemplate="<b>%{text}</b><br>Delay: %{x:.1f}%<br>₹%{y:.1f}M<extra></extra>"))
-    fig.update_layout(**PLOTLY_LAYOUT,title="Supplier Risk Matrix",xaxis_title="Delay Rate %",yaxis_title="Spend (₹M)",height=320)
+    fig.update_layout(**PLOTLY_LAYOUT,title="Supplier Risk Matrix",xaxis_title="Delay Rate %",yaxis_title="Spend (₹M)")
     st.plotly_chart(fig,use_container_width=True)
 
 # ── DATA QUALITY ─────────────────────────────────────────────────────────────
